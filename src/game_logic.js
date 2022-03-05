@@ -55,6 +55,7 @@ const score_list = {
     },
 }
 
+//evaluation function for single player
 let detect = (board, type) => {
     let ret = 0;
     for(let y=0;y<15;y++){
@@ -186,6 +187,7 @@ let detect = (board, type) => {
     return ret;
 }
 
+//evaluation function
 export let get_score = (board) => {
     return detect(board, 'b') - detect(board, 'w');
 }
@@ -289,6 +291,7 @@ let reverse_type = (type)=>{
     return 'w';
 }
 
+//min-max search
 export let next_step = (board, type, depth, cal) => {
     let scores = next_score(board, type, cal);
     console.log('depth', depth);
