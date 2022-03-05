@@ -5,43 +5,53 @@ let stone_val = (board, x, y) => {
 const score_list = {
     0: {
         0: 0,
-        1: 0
+        1: 0,
+        2: 0
     },
     1: {
         0: 10,
-        1: 3
+        1: 3,
+        2: 0
     },
     2: {
         0: 100,
-        1: 10
+        1: 10,
+        2: 0
     },
     3: {
         0: 1000,
-        1: 100
+        1: 100,
+        2: 0
     },
     4: {
         0: 10000,
-        1: 1000
+        1: 1000,
+        2: 0
     },
     5: {
         0: 100000,
-        1: 100000
+        1: 100000,
+        2: 100000
     },
     6: {
         0: 100000,
-        1: 100000
+        1: 100000,
+        2: 100000
     },
     7: {
         0: 100000,
-        1: 100000
+        1: 100000,
+        2: 100000
     },
     8: {
         0: 100000,
-        1: 100000
+        1: 100000,
+        2: 100000
     },
     9: {
         0: 100000,
-        1: 100000
+        1: 100000,
+        2: 100000
     },
 }
 
@@ -62,9 +72,7 @@ let detect = (board, type) => {
             }
             else {
                 block += 1;
-                if(block!==2){
-                    ret += score_list[crt][block];
-                }
+                ret += score_list[crt][block];
                 crt = 0;
                 block = 1;
             }
@@ -85,9 +93,7 @@ let detect = (board, type) => {
             }
             else {
                 block += 1;
-                if(block!==2){
-                    ret += score_list[crt][block];
-                }
+                ret += score_list[crt][block];
                 crt = 0;
                 block = 1;
             }
@@ -108,9 +114,7 @@ let detect = (board, type) => {
             }
             else {
                 block += 1;
-                if(block!==2){
-                    ret += score_list[crt][block];
-                }
+                ret += score_list[crt][block];
                 crt = 0;
                 block = 1;
             }
@@ -131,9 +135,7 @@ let detect = (board, type) => {
             }
             else {
                 block += 1;
-                if(block!==2){
-                    ret += score_list[crt][block];
-                }
+                ret += score_list[crt][block];
                 crt = 0;
                 block = 1;
             }
@@ -154,9 +156,7 @@ let detect = (board, type) => {
             }
             else {
                 block += 1;
-                if(block!==2){
-                    ret += score_list[crt][block];
-                }
+                ret += score_list[crt][block];
                 crt = 0;
                 block = 1;
             }
@@ -177,9 +177,7 @@ let detect = (board, type) => {
             }
             else {
                 block += 1;
-                if(block!==2){
-                    ret += score_list[crt][block];
-                }
+                ret += score_list[crt][block];
                 crt = 0;
                 block = 1;
             }
