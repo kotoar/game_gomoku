@@ -27,24 +27,30 @@
                 <span class="ind_item" v-on:click="tree_depth_increase">+</span>
             </div>
             <div class="list_line">
+                <span class="ind_item">Calculate: </span>
+                <span class="ind_item" v-on:click="cal_num_decrease">-</span>
+                <span class="ind_item">{{cal_num}}</span>
+                <span class="ind_item" v-on:click="cal_num_increase">+</span>
+            </div>
+            <div class="list_line">
                 <span>Play as: </span>
                 <span :class="{btn_item: com_player_as!=='b', btn_selected:com_player_as==='b'}" v-on:click="com_player_2b">Black</span>
                 <span :class="{btn_item: com_player_as!=='w', btn_selected:com_player_as==='w'}" v-on:click="com_player_2w">White</span>
             </div>
             <div class="list_line">
-                <span class="btn_item" style="padding-left: 20px;padding-right: 20px">
+                <span class="btn_item" style="padding-left: 20px;padding-right: 20px" v-on:click="start_game_ai">
                     Start
                 </span>
             </div>
         </div>
         <br>
-        <small class="small_info">by kotoar</small>
+        <small class="small_info">UCSD 22WIN CSE202 project</small>
     </div>
 </template>
 
 
 <script>
-import {get_score, get_result} from "./game_logic.js"
+import {get_score, get_result, next_step} from "./game_logic.js"
 
 export default {
     name: 'App',
@@ -78,14 +84,15 @@ export default {
             },
             ai_config_show: false,
             com_player_as: 'b',
-            tree_depth: 3,
+            com_play_as: 'b',
+            tree_depth: 1,
+            cal_num: 8
         }
     },
     mounted() {
         this.board_size = 15;
         this.canvas_width = this.line_padding * (this.board_size-1) + 2 * this.line_margin;
         this.canvas_height = this.line_padding * (this.board_size-1) + 2 * this.line_margin;
-        console.log(this.canvas_width, this.canvas_height);
         this.canvas = document.getElementById('mainCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.ctx.font = "15px Georgia";
@@ -96,9 +103,9 @@ export default {
             if(!this.board_able){
                 return;
             }
-            const rect = this.canvas.getBoundingClientRect()
-            const x_pos = event.clientX - rect.left
-            const y_pos = event.clientY - rect.top
+            const rect = this.canvas.getBoundingClientRect();
+            const x_pos = event.clientX - rect.left;
+            const y_pos = event.clientY - rect.top;
             const x = Math.floor((x_pos - this.line_margin + this.line_padding/2)/this.line_padding);
             const y = Math.floor((y_pos - this.line_margin + this.line_padding/2)/this.line_padding);
             if(x<0 || x>=15 || y<0 || y>=15){
@@ -113,10 +120,23 @@ export default {
                     this.board_able = false;
                     this.game_result = this.now_player;
                 }
-                this.exchange_player();
+                else
+                if(this.player_mode==="ai"){
+                    let next_index = next_step(this.stones, this.com_play_as, this.tree_depth*2-1, this.cal_num);
+                    this.stones[next_index] = this.com_play_as;
+                    this.update_stones();
+                    let nresult = get_result(this.stones, this.com_play_as);
+                    if(nresult){
+                        this.board_able = false;
+                        this.game_result = this.com_play_as;
+                    }
+                }
+                else{
+                    this.exchange_player();
+                }
+
             }
         })
-        console.log(this.stones[3]);
     },
     methods: {
         get_score,
@@ -133,6 +153,12 @@ export default {
             this.game_start = true;
             this.board_able = true;
             this.player_mode = "ai";
+            if(this.com_player_as==='b'){
+                this.com_play_as='w';
+            }
+            else{
+                this.com_play_as='b';
+            }
         },
         restart_game(){
             this.stones.splice(undefined, this.stones.length);
@@ -153,6 +179,16 @@ export default {
         tree_depth_decrease(){
             if(this.tree_depth > 1){
                 this.tree_depth -= 1;
+            }
+        },
+        cal_num_increase(){
+            if(this.cal_num < 20){
+                this.cal_num += 1;
+            }
+        },
+        cal_num_decrease(){
+            if(this.cal_num > 1){
+                this.cal_num -= 1;
             }
         },
         com_player_2b(){

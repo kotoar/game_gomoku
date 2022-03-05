@@ -24,30 +24,29 @@ const score_list = {
         1: 1000
     },
     5: {
-        0: 10000,
-        1: 10000
+        0: 100000,
+        1: 100000
     },
     6: {
-        0: 10000,
-        1: 10000
+        0: 100000,
+        1: 100000
     },
     7: {
-        0: 10000,
-        1: 10000
+        0: 100000,
+        1: 100000
     },
     8: {
-        0: 10000,
-        1: 10000
+        0: 100000,
+        1: 100000
     },
     9: {
-        0: 10000,
-        1: 10000
+        0: 100000,
+        1: 100000
     },
 }
 
 let detect = (board, type) => {
     let ret = 0;
-
     for(let y=0;y<15;y++){
         let block = 1;
         let crt = 0;
@@ -65,8 +64,8 @@ let detect = (board, type) => {
                 block += 1;
                 if(block!==2){
                     ret += score_list[crt][block];
-                    crt = 0;
                 }
+                crt = 0;
                 block = 1;
             }
         }
@@ -88,8 +87,8 @@ let detect = (board, type) => {
                 block += 1;
                 if(block!==2){
                     ret += score_list[crt][block];
-                    crt = 0;
                 }
+                crt = 0;
                 block = 1;
             }
         }
@@ -111,8 +110,8 @@ let detect = (board, type) => {
                 block += 1;
                 if(block!==2){
                     ret += score_list[crt][block];
-                    crt = 0;
                 }
+                crt = 0;
                 block = 1;
             }
         }
@@ -134,8 +133,8 @@ let detect = (board, type) => {
                 block += 1;
                 if(block!==2){
                     ret += score_list[crt][block];
-                    crt = 0;
                 }
+                crt = 0;
                 block = 1;
             }
         }
@@ -157,8 +156,8 @@ let detect = (board, type) => {
                 block += 1;
                 if(block!==2){
                     ret += score_list[crt][block];
-                    crt = 0;
                 }
+                crt = 0;
                 block = 1;
             }
         }
@@ -180,8 +179,8 @@ let detect = (board, type) => {
                 block += 1;
                 if(block!==2){
                     ret += score_list[crt][block];
-                    crt = 0;
                 }
+                crt = 0;
                 block = 1;
             }
         }
@@ -200,9 +199,12 @@ export let get_result = (board, type) => {
             let val = stone_val(board, x, y);
             if(val === type){
                 crt += 1;
+                if(crt>=5){
+                    return true;
+                }
             }
-            else if(crt>=5){
-                return true;
+            else {
+                crt = 0;
             }
         }
     }
@@ -212,9 +214,12 @@ export let get_result = (board, type) => {
             let val = stone_val(board, x, y);
             if(val === type){
                 crt += 1;
+                if(crt>=5){
+                    return true;
+                }
             }
-            else if(crt>=5){
-                return true;
+            else {
+                crt = 0;
             }
         }
     }
@@ -224,9 +229,12 @@ export let get_result = (board, type) => {
             let val = stone_val(board, x, y);
             if(val === type){
                 crt += 1;
+                if(crt>=5){
+                    return true;
+                }
             }
-            else if(crt>=5){
-                return true;
+            else {
+                crt = 0;
             }
         }
     }
@@ -236,9 +244,12 @@ export let get_result = (board, type) => {
             let val = stone_val(board, x, y);
             if(val === type){
                 crt += 1;
+                if(crt>=5){
+                    return true;
+                }
             }
-            else if(crt>=5){
-                return true;
+            else {
+                crt = 0;
             }
         }
     }
@@ -248,9 +259,12 @@ export let get_result = (board, type) => {
             let val = stone_val(board, x, y);
             if(val === type){
                 crt += 1;
+                if(crt>=5){
+                    return true;
+                }
             }
-            else if(crt>=5){
-                return true;
+            else {
+                crt = 0;
             }
         }
     }
@@ -260,11 +274,62 @@ export let get_result = (board, type) => {
             let val = stone_val(board, x, y);
             if(val === type){
                 crt += 1;
+                if(crt>=5){
+                    return true;
+                }
             }
-            else if(crt>=5){
-                return true;
+            else {
+                crt = 0;
             }
         }
     }
     return false;
+}
+
+let reverse_type = (type)=>{
+    if(type==='w') return 'b';
+    return 'w';
+}
+
+export let next_step = (board, type, depth, cal) => {
+    let scores = next_score(board, type, cal);
+    console.log('depth', depth);
+    console.log(scores);
+    if(depth===1){
+        return scores[0]["index"];
+    }
+    for(let i=0;i<scores.length;i++){
+        let index = scores[i]["index"];
+        let cpboard = [...board];
+        cpboard[index] = type;
+        scores[i]["score"] = next_step(cpboard, reverse_type(type), depth-1, cal);
+    }
+    let sortFn = (a, b)=>{
+        if(type==='b'){
+            return b.score - a.score;
+        }
+        return a.score - b.score;
+    }
+    scores.sort(sortFn);
+    return scores[0]["index"];
+}
+
+let next_score = (board, type, cal) => {
+    let scores = [];
+    for(let i=0;i<225;i++){
+        if(board[i]!==undefined) continue;
+        board[i] = type;
+        let s = get_score(board);
+        board[i] = undefined;
+        scores.push({"index":i, "score":s});
+    }
+    let sortFn = (a, b)=>{
+        if(type==='b'){
+            return b.score - a.score;
+        }
+        return a.score - b.score;
+    }
+    scores.sort(sortFn);
+    scores = scores.slice(0, cal);
+    return scores;
 }
