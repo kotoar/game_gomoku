@@ -84,7 +84,7 @@ export default {
             },
             ai_config_show: false,
             com_player_as: 'b',
-            com_play_as: 'b',
+            com_play_as: 'w',
             tree_depth: 1,
             cal_num: 8
         }
@@ -153,11 +153,14 @@ export default {
             this.game_start = true;
             this.board_able = true;
             this.player_mode = "ai";
-            if(this.com_player_as==='b'){
-                this.com_play_as='w';
+            if(this.com_player_as==='w'){
+                this.com_play_as='b';
+                this.stones[7*15+7] = 'b'
+                this.draw_black_stone(7,7)
+                this.exchange_player()
             }
             else{
-                this.com_play_as='b';
+                this.com_play_as='w';
             }
         },
         restart_game(){
