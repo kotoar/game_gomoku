@@ -3,6 +3,8 @@ let stone_val = (board, x, y) => {
 }
 
 const score_list = {
+    //The first line "crt" here indicates how many stones are in the line
+    //The second line "block" indicates how many rival's stones block the line
     0: {
         0: 0,
         1: 0,
