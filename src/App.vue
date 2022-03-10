@@ -38,7 +38,7 @@
                 <span :class="{btn_item: com_player_as!=='w', btn_selected:com_player_as==='w'}" v-on:click="com_player_2w">White</span>
             </div>
             <div class="list_line">
-                <span class="btn_item" style="padding-left: 20px;padding-right: 20px" v-on:click="start_game_ai">
+                <span class="btn_item" :class="{btn_disable: game_start}" style="padding-left: 20px;padding-right: 20px" v-on:click="start_game_ai">
                     Start
                 </span>
             </div>
@@ -142,6 +142,7 @@ export default {
         get_score,
         get_result,
         start_game_player(){
+            if(this.game_start) return;
             this.game_start = true;
             this.board_able = true;
             this.player_mode = "player";
@@ -150,6 +151,7 @@ export default {
             this.ai_config_show = !this.ai_config_show;
         },
         start_game_ai(){
+            if(this.game_start) return;
             this.game_start = true;
             this.board_able = true;
             this.player_mode = "ai";
@@ -291,6 +293,7 @@ export default {
     padding: 2px 4px;
     margin-left: 5px;
     margin-right: 5px;
+    cursor: default;
 }
 .btn_item:hover{
     background-color: coral;
@@ -305,6 +308,7 @@ export default {
     margin-left: 5px;
     margin-right: 5px;
     background-color: aqua;
+    cursor: default;
 }
 .btn_selected:hover{
     background-color: coral;
