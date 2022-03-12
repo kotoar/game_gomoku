@@ -188,8 +188,14 @@ let detect = (board, type) => {
 }
 
 //evaluation function
-export let get_score = (board) => {
-    return detect(board, 'b') - detect(board, 'w');
+export let get_score = (board, host) => {
+    console.log('host=', host)
+    let kb = (host === 'b' ? 1.5: 1);
+    let kw = (host === 'w' ? 1.5: 1);
+    console.log('kb ', kb);
+    console.log('kw ', kw);
+
+    return kb * detect(board, 'b') - kw * detect(board, 'w');
 }
 
 export let get_result = (board, type) => {
@@ -315,12 +321,17 @@ export let next_step = (board, type, depth, cal) => {
     return scores[0]["index"];
 }
 
+let inverse_type = (type) => {
+    if(type==='w') return 'b';
+    return 'w';
+}
+
 let next_score = (board, type, cal) => {
     let scores = [];
     for(let i=0;i<225;i++){
         if(board[i]!==undefined) continue;
         board[i] = type;
-        let s = get_score(board);
+        let s = get_score(board, inverse_type(type));
         board[i] = undefined;
         scores.push({"index":i, "score":s});
     }
