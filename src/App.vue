@@ -114,7 +114,7 @@ export default {
             let res = this.step(x, y);
             if(res){
                 this.update_stones();
-                this.score = get_score(this.stones);
+                this.score = get_score(this.stones, 'b');
                 let result = get_result(this.stones, this.now_player);
                 if(result){
                     this.board_able = false;
@@ -139,8 +139,6 @@ export default {
         })
     },
     methods: {
-        get_score,
-        get_result,
         start_game_player(){
             if(this.game_start) return;
             this.game_start = true;
