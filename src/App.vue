@@ -122,7 +122,8 @@ export default {
                 }
                 else
                 if(this.player_mode==="ai"){
-                    let next_index = next_step(this.stones, this.com_play_as, this.tree_depth*2-1, this.cal_num);
+                    let [next_index,next_score] = next_step(this.stones, this.com_play_as, this.tree_depth*2-1, this.cal_num);
+                    this.score = next_score
                     this.stones[next_index] = this.com_play_as;
                     this.update_stones();
                     let nresult = get_result(this.stones, this.com_play_as);
