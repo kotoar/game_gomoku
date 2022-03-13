@@ -2,6 +2,7 @@ const BOARDLEN = 15
 let stone_val = (board, x, y) => {
     return board[x*15 + y];
 }
+const QS_SCORE = 1000
 const score_list = {
     //The first line "crt" here indicates how many stones are in the line
     //The second line "block" indicates how many rival's stones block the line
@@ -23,12 +24,12 @@ const score_list = {
     3: {
         0: 1000,
         1: 100,
-        2: 0
+        2: 0,
     },
     4: {
         0: 10000,
         1: 9900,
-        2: 0
+        2: 0,
     },
     5: {
         0: 100000,
@@ -56,134 +57,95 @@ const score_list = {
         2: 100000
     },
 }
+function qiansi_pattern(type){
 
+    return [[undefined,type,undefined,type,type,undefined],[undefined,type,type,undefined,type,undefined]]
+}
+function val_helper(val,type,crt,block,ret,val_stack){
+    val_stack.push(val)
+    if (val_stack.length > 6){
+        val_stack.pop(0)
+    }
+    //val_stack in qiansi_pattern
+    if (qiansi_pattern(type).includes(val_stack)){
+        ret += QS_SCORE
+    }
+
+    if(val === type){
+        crt += 1;
+    }
+    else if(val===undefined){
+        ret += score_list[crt][block];
+        crt = 0;
+        block = 0;
+
+    }
+    else {
+        //Opponent Stone
+
+        block += 1;
+        ret += score_list[crt][block];
+        crt = 0;
+        block = 1;
+
+    }
+    return [crt,block,ret]
+}
 //evaluation function for single player
 let detect = (board, type) => {
     let ret = 0;
+    let val_stack = [];
     for(let y=0;y<15;y++){
         let block = 1;
         let crt = 0;
         for(let x=0;x<15;x++){
             let val = stone_val(board, x, y);
-            if(val === type){
-                crt += 1;
-            }
-            else if(val===undefined){
-                ret += score_list[crt][block];
-                crt = 0;
-                block = 0;
-            }
-            else {
-                block += 1;
-                ret += score_list[crt][block];
-                crt = 0;
-                block = 1;
-            }
+            [crt,block,ret] = val_helper(val,type,crt,block,ret,val_stack)
         }
     }
+    val_stack = [];
     for(let x=0;x<15;x++){
         let block = 1;
         let crt = 0;
         for(let y=0;y<15;y++){
             let val = stone_val(board, x, y);
-            if(val === type){
-                crt += 1;
-            }
-            else if(val===undefined){
-                ret += score_list[crt][block];
-                crt = 0;
-                block = 0;
-            }
-            else {
-                block += 1;
-                ret += score_list[crt][block];
-                crt = 0;
-                block = 1;
-            }
+            [crt,block,ret] = val_helper(val,type,crt,block,ret,val_stack)
         }
     }
+    val_stack = [];
     for(let xb=0,yb=0;yb<15;yb++){
         let block = 1;
         let crt = 0;
         for(let x=xb, y=yb;0<=x && x<15 && 0<=y && y<15; x+=1, y+=1){
             let val = stone_val(board, x, y);
-            if(val === type){
-                crt += 1;
-            }
-            else if(val===undefined){
-                ret += score_list[crt][block];
-                crt = 0;
-                block = 0;
-            }
-            else {
-                block += 1;
-                ret += score_list[crt][block];
-                crt = 0;
-                block = 1;
-            }
+            [crt,block,ret] = val_helper(val,type,crt,block,ret,val_stack)
         }
     }
+    val_stack = [];
     for(let xb=1,yb=0;xb<15;xb++){
         let block = 1;
         let crt = 0;
         for(let x=xb, y=yb;0<=x && x<15 && 0<=y && y<15; x+=1, y+=1){
             let val = stone_val(board, x, y);
-            if(val === type){
-                crt += 1;
-            }
-            else if(val===undefined){
-                ret += score_list[crt][block];
-                crt = 0;
-                block = 0;
-            }
-            else {
-                block += 1;
-                ret += score_list[crt][block];
-                crt = 0;
-                block = 1;
-            }
+            [crt,block,ret] = val_helper(val,type,crt,block,ret,val_stack)
         }
     }
+    val_stack = [];
     for(let xb=0,yb=0;yb<15;yb++){
         let block = 1;
         let crt = 0;
         for(let x=xb, y=yb;0<=x && x<15 && 0<=y && y<15; x+=1, y-=1){
             let val = stone_val(board, x, y);
-            if(val === type){
-                crt += 1;
-            }
-            else if(val===undefined){
-                ret += score_list[crt][block];
-                crt = 0;
-                block = 0;
-            }
-            else {
-                block += 1;
-                ret += score_list[crt][block];
-                crt = 0;
-                block = 1;
-            }
+            [crt,block,ret] = val_helper(val,type,crt,block,ret,val_stack)
         }
     }
+    val_stack = [];
     for(let xb=1,yb=14;xb<15;xb++){
         let block = 1;
         let crt = 0;
         for(let x=xb, y=yb;0<=x && x<15 && 0<=y && y<15; x+=1, y-=1){
             let val = stone_val(board, x, y);
-            if(val === type){
-                crt += 1;
-            }
-            else if(val===undefined){
-                ret += score_list[crt][block];
-                crt = 0;
-                block = 0;
-            }
-            else {
-                block += 1;
-                ret += score_list[crt][block];
-                crt = 0;
-                block = 1;
-            }
+            [crt,block,ret] = val_helper(val,type,crt,block,ret,val_stack)
         }
     }
     return ret;
@@ -361,7 +323,7 @@ function stone_list(board){
     for(let x=0;x<BOARDLEN;x++){
         for(let y=0;y<BOARDLEN;y++){
             if (board[x*BOARDLEN+ y]!==undefined){
-                if (board[x*BOARDLEN+y]== 'b'){
+                if (board[x*BOARDLEN+y]=== 'b'){
                     output['black'].push([x+1,y+1])
                 } else{
                     output['white'].push([x+1,y+1])
