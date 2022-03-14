@@ -280,7 +280,7 @@ export let next_step = (board, type, depth, cal) => {
         console.log("white:", warzone['white']);
         let type_reverse = reverse_type(type);
         var opt_move=0;
-        [opt_move,scores[i]["score"]] = next_step(cpboard, type_reverse, depth-1, cal);
+        [opt_move,scores[i]["score"]] = next_step(cpboard, type_reverse, depth-1);
         console.log(opt_move)
     }
     let sortFn = (a, b)=>{
@@ -297,6 +297,7 @@ let inverse_type = (type) => {
     if(type==='w') return 'b';
     return 'w';
 }
+
 function bound_generate(board){
     let left_b = BOARDLEN,up_b = BOARDLEN;
     let right_b = 0, down_b = 0;

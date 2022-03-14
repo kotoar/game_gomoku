@@ -1,5 +1,8 @@
 <template>
     <div id="app" class="div_center">
+        <div v-show="log_show">
+            <back-tracking-log ref="backtrackingLog"></back-tracking-log>
+        </div>
         <div style="font-size: 30px">Gomoku Game</div>
         <br>
         <div id="ind_box">
@@ -18,6 +21,7 @@
             <span id="btn_start_player" class="btn_item" :class="{btn_disable: game_start}" v-on:click="start_game_player">vs Player</span>
             <span id="btn_start_ai" class="btn_item" :class="{btn_disable: game_start}" v-on:click="show_ai_config">vs Com</span>
             <span id="btn_restart" class="btn_item"  v-on:click="restart_game">Reset</span>
+            <span class="btn_item" v-on:click="log_show = !log_show">Log</span>
         </div>
         <div v-show="ai_config_show" class="config_box" width="340px">
             <div class="list_line">
@@ -34,8 +38,8 @@
             </div>
             <div class="list_line">
                 <span>Play as: </span>
-                <span :class="{btn_item: com_player_as!=='b', btn_selected:com_player_as==='b'}" v-on:click="com_player_2b">Black</span>
-                <span :class="{btn_item: com_player_as!=='w', btn_selected:com_player_as==='w'}" v-on:click="com_player_2w">White</span>
+                <span :class="{btn_item: player_type!=='b', btn_selected:player_type==='b'}" v-on:click="com_player_2b">Black</span>
+                <span :class="{btn_item: player_type!=='w', btn_selected:player_type==='w'}" v-on:click="com_player_2w">White</span>
             </div>
             <div class="list_line">
                 <span class="btn_item" :class="{btn_disable: game_start}" style="padding-left: 20px;padding-right: 20px" v-on:click="start_game_ai">
@@ -51,9 +55,11 @@
 
 <script>
 import {get_score, get_result, next_step} from "./game_logic.js"
+import BackTrackingLog from "@/components/BackTrackingLog";
 
 export default {
     name: 'App',
+    components: {BackTrackingLog},
     data: () => {
         return {
             board_size: 15,
@@ -83,10 +89,11 @@ export default {
                 'w': 'White Wins'
             },
             ai_config_show: false,
-            com_player_as: 'b',
-            com_play_as: 'w',
+            log_show: true,
+            player_type: 'b',
+            com_type: 'w',
             tree_depth: 1,
-            cal_num: 8
+            cal_num: 7
         }
     },
     mounted() {
@@ -111,31 +118,9 @@ export default {
             if(x<0 || x>=15 || y<0 || y>=15){
                 return;
             }
-            let res = this.step(x, y);
+            let res = this.update_data(x, y);
             if(res){
-                this.update_stones();
-                this.score = get_score(this.stones, 'b');
-                let result = get_result(this.stones, this.now_player);
-                if(result){
-                    this.board_able = false;
-                    this.game_result = this.now_player;
-                }
-                else
-                if(this.player_mode==="ai"){
-                    let [next_index,next_score] = next_step(this.stones, this.com_play_as, this.tree_depth*2-1, this.cal_num);
-                    this.score = next_score
-                    this.stones[next_index] = this.com_play_as;
-                    this.update_stones();
-                    let nresult = get_result(this.stones, this.com_play_as);
-                    if(nresult){
-                        this.board_able = false;
-                        this.game_result = this.com_play_as;
-                    }
-                }
-                else{
-                    this.exchange_player();
-                }
-
+                this.step_forward(x, y)
             }
         })
     },
@@ -154,14 +139,16 @@ export default {
             this.game_start = true;
             this.board_able = true;
             this.player_mode = "ai";
-            if(this.com_player_as==='w'){
-                this.com_play_as='b';
+            if(this.player_type==='w'){
+                this.com_type='b';
                 this.stones[7*15+7] = 'b'
                 this.draw_black_stone(7,7)
+                this.score = get_score(this.stones, 'b');
+                this.add_record('b', 7, 7, this.score)
                 this.exchange_player()
             }
             else{
-                this.com_play_as='w';
+                this.com_type='w';
             }
         },
         restart_game(){
@@ -174,6 +161,7 @@ export default {
             this.game_result = undefined;
             this.game_start = false;
             this.board_able = false;
+            this.$refs.backtrackingLog.self_clear_data()
         },
         tree_depth_increase(){
             if(this.tree_depth < 7){
@@ -196,10 +184,10 @@ export default {
             }
         },
         com_player_2b(){
-            this.com_player_as = 'b';
+            this.player_type = 'b';
         },
         com_player_2w(){
-            this.com_player_as = 'w';
+            this.player_type = 'w';
         },
         stone_index(x, y){
             return 15*x + y;
@@ -212,12 +200,52 @@ export default {
                 this.now_player = 'w';
             }
         },
-        step(x, y){
+        step_forward(x, y){
+            this.update_stones();
+            this.score = get_score(this.stones, this.player_type);
+            let result = get_result(this.stones, this.now_player);
+            this.add_record(this.now_player, x, y, this.score);
+            if(result){
+                //game end
+                this.board_able = false;
+                this.game_result = this.now_player;
+                return;
+            }
+            if(this.player_mode==="ai"){
+                let [next_index,next_score] = next_step(this.stones, this.com_type, this.tree_depth, this.cal_num);
+                this.score = next_score
+                this.stones[next_index] = this.com_type;
+                let next_x = Math.floor(next_index / 15)
+                let next_y = next_index % 15
+                this.add_record(this.com_type, next_x, next_y, this.score);
+                this.update_stones();
+                let next_result = get_result(this.stones, this.com_type);
+                if(next_result){
+                    this.board_able = false;
+                    this.game_result = this.com_type;
+                }
+            }
+            else{
+                this.exchange_player();
+            }
+        },
+        update_data(x, y){
             if(this.stones[this.stone_index(x, y)] !== undefined){
                 return false;
             }
             this.stones[this.stone_index(x, y)] = this.now_player;
             return true;
+        },
+        add_record(color, position_x, position_y, score){
+            let new_record = {
+                step: {
+                    color: color,
+                    row: position_x,
+                    col: position_y
+                },
+                score: score
+            }
+            this.$refs.backtrackingLog.self_add_record(new_record)
         },
         drawLines(){
             this.ctx.fillStyle = 'black';
@@ -259,7 +287,6 @@ export default {
             this.ctx.fillStyle = 'black';
             this.ctx.fill();
         },
-
     }
 }
 </script>
