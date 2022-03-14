@@ -267,7 +267,7 @@ export let next_step = (board, type, depth, cal) => {
     let scores = next_score(board, type, cal);
     console.log('depth', depth);
     console.log(scores);
-    if(depth===1){
+    if(depth==1){
         return [scores[0]["index"],scores[0]['score']];
     }
     for(let i=0;i<scores.length;i++){
