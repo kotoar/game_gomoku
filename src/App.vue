@@ -140,7 +140,7 @@ export default {
             ai_test_tree_depth_w: 2,
             ai_test_cal_b: 6,
             ai_test_cal_w: 6,
-            ai_test_round: 100,
+            ai_test_round: 1,
         }
     },
     mounted() {
@@ -195,7 +195,7 @@ export default {
                 this.com_type='w';
             }
         },
-        ai_test_start: function () {
+        ai_test_start() {
             this.$refs["result-log"].clearResult();
             this.$refs["result-log"].meShow(true);
             this.$refs["result-log"].initParameters(
@@ -208,6 +208,7 @@ export default {
             for (let i = 0; i < this.ai_test_round; i++) {
                 let type = 's';
                 this.stones = Array(255);
+                this.drawLines()
                 do {
                     if (type === 's') {
                         this.stones[7 * 15 + 7] = 'b';
@@ -224,12 +225,14 @@ export default {
                     if(get_result(this.stones, type)) break;
                     type = (type==='b' ? 'w' : 'b');
                 } while (type !=='s')
+                console.log(this.stones)
+                this.update_stones()
                 this.$refs["result-log"].addResult({'winner': type});
             }
         },
         restart_game(){
             this.stones.splice(undefined, this.stones.length);
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
             this.drawLines();
             this.now_player = 'b';
             this.score = 0;
@@ -325,6 +328,7 @@ export default {
             this.$refs.backtrackingLog.self_add_record(new_record)
         },
         drawLines(){
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.ctx.fillStyle = 'black';
             for(let i=0;i<this.board_size;i++){
                 this.ctx.beginPath();

@@ -59,7 +59,159 @@ const score_list = {
 
 //evaluation function for single player
 let detect = (board, type) => {
-    let ret = 0;
+    let ret = Array(30);
+    ret.fill(0);
+    /*let detect_line = (update_method1, update_method2) => {
+        for(let x=0, y=0; x<15 && y<15;[x, y] = update_method1([x, y])){
+            let block = 1;
+            let crt = 0;
+            for(let x=0, y=0; x<15 && y<15;[x, y] = update_method2([x, y])){
+                let val = stone_val(board, x, y);
+                if(val === type){
+                    crt += 1;
+                }
+                else if(val===undefined){
+                    ret[crt][block] += 1;
+                    crt = 0;
+                    block = 0;
+                }
+                else {
+                    block += 1;
+                    ret[crt][block] += 1;
+                    crt = 0;
+                    block = 1;
+                }
+            }
+        }
+    }
+    */
+    for(let y=0;y<15;y++){
+        let block = 1;
+        let crt = 0;
+        for(let x=0;x<15;x++){
+            let val = stone_val(board, x, y);
+            if(val === type){
+                crt += 1;
+            }
+            else if(val===undefined){
+                ret[crt*3+block] += 1;
+                crt = 0;
+                block = 0;
+            }
+            else {
+                block += 1;
+                ret[crt*3+block] += 1;
+                crt = 0;
+                block = 1;
+            }
+        }
+    }
+    for(let x=0;x<15;x++){
+        let block = 1;
+        let crt = 0;
+        for(let y=0;y<15;y++){
+            let val = stone_val(board, x, y);
+            if(val === type){
+                crt += 1;
+            }
+            else if(val===undefined){
+                ret[crt*3+block] += 1;
+                crt = 0;
+                block = 0;
+            }
+            else {
+                block += 1;
+                ret[crt*3+block] += 1;
+                crt = 0;
+                block = 1;
+            }
+        }
+    }
+    for(let xb=0,yb=0;yb<15;yb++){
+        let block = 1;
+        let crt = 0;
+        for(let x=xb, y=yb;0<=x && x<15 && 0<=y && y<15; x+=1, y+=1){
+            let val = stone_val(board, x, y);
+            if(val === type){
+                crt += 1;
+            }
+            else if(val===undefined){
+                ret[crt*3+block] += 1;
+                crt = 0;
+                block = 0;
+            }
+            else {
+                block += 1;
+                ret[crt*3+block] += 1;
+                crt = 0;
+                block = 1;
+            }
+        }
+    }
+    for(let xb=1,yb=0;xb<15;xb++){
+        let block = 1;
+        let crt = 0;
+        for(let x=xb, y=yb;0<=x && x<15 && 0<=y && y<15; x+=1, y+=1){
+            let val = stone_val(board, x, y);
+            if(val === type){
+                crt += 1;
+            }
+            else if(val===undefined){
+                ret[crt*3+block] += 1;
+                crt = 0;
+                block = 0;
+            }
+            else {
+                block += 1;
+                ret[crt*3+block] += 1;
+                crt = 0;
+                block = 1;
+            }
+        }
+    }
+    for(let xb=0,yb=0;yb<15;yb++){
+        let block = 1;
+        let crt = 0;
+        for(let x=xb, y=yb;0<=x && x<15 && 0<=y && y<15; x+=1, y-=1){
+            let val = stone_val(board, x, y);
+            if(val === type){
+                crt += 1;
+            }
+            else if(val===undefined){
+                ret[crt*3+block] += 1;
+                crt = 0;
+                block = 0;
+            }
+            else {
+                block += 1;
+                ret[crt*3+block] += 1;
+                crt = 0;
+                block = 1;
+            }
+        }
+    }
+    for(let xb=1,yb=14;xb<15;xb++){
+        let block = 1;
+        let crt = 0;
+        for(let x=xb, y=yb;0<=x && x<15 && 0<=y && y<15; x+=1, y-=1){
+            let val = stone_val(board, x, y);
+            if(val === type){
+                crt += 1;
+            }
+            else if(val===undefined){
+                ret[crt*3+block] += 1;
+                crt = 0;
+                block = 0;
+            }
+            else {
+                block += 1;
+                ret[crt*3+block] += 1;
+                crt = 0;
+                block = 1;
+            }
+        }
+    }
+/*
     for(let y=0;y<15;y++){
         let block = 1;
         let crt = 0;
@@ -186,6 +338,27 @@ let detect = (board, type) => {
             }
         }
     }
+*/
+    //console.log(ret);
+    return ret;
+}
+/*
+export let is_valid = (stones, index, type) => {
+    if(type !== 'b') return true;
+    let stonescp = [...stones];
+    stonescp[index] = 'b';
+    let detect_crt = detect(stonescp, 'b');
+    //todo
+}
+ */
+
+let get_detect_score = (detect_list) => {
+    let ret = 0;
+    for(let crt = 1;crt<10;crt++){
+        for(let block = 0;block<3;block++){
+            ret += detect_list[crt*3+block] * score_list[crt][block];
+        }
+    }
     return ret;
 }
 
@@ -197,7 +370,7 @@ export let get_score = (board, host) => {
     //console.log('kb ', kb);
     //console.log('kw ', kw);
 
-    return kb * detect(board, 'b') - kw * detect(board, 'w');
+    return kb * get_detect_score(detect(board, 'b')) - kw * get_detect_score(detect(board, 'w'));
 }
 
 export let get_result = (board, type) => {
@@ -304,8 +477,8 @@ export let next_step = (board, type, depth, cal) => {
     // return [next_step location, next_step score]
     let scores = next_score(board, type, cal);
     console.log('depth', depth);
-    console.log(scores);
-    if(depth===1){
+    console.log('scores', scores);
+    if(depth==1){
         return [scores[0]["index"],scores[0]['score']];
     }
     for(let i=0;i<scores.length;i++){
