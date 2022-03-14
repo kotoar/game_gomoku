@@ -14,7 +14,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr style="width: fit-content" class="list_item_row" v-for="record in recordList" :key="record.index" v-on:click="set_back(record.index)">
+                <tr style="width: fit-content" class="list_item_row" v-for="record in recordList" :key="record.index">
                     <th class="list_item_item">{{record.index}}</th>
                     <th class="list_item_item"><div :class="{black_stone: record.step.color==='b', white_stone: record.step.color==='w'}"></div></th>
                     <th class="list_item_item">({{record.step.row}}, {{record.step.col}})</th>
@@ -38,13 +38,9 @@ export default {
 
     },
     methods: {
-        set_back(index){
-            console.log('set back to', index)
-        },
         self_add_record(record){
             record.index = this.recordList.length + 1
             this.recordList.push(record)
-            console.log(record.score)
         },
         self_clear_data(){
             this.recordList = Array(0)
