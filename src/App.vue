@@ -3,6 +3,9 @@
         <div v-show="log_show">
             <back-tracking-log ref="backtrackingLog"></back-tracking-log>
         </div>
+        <div>
+            <ai-test-log ref="result-log"></ai-test-log>
+        </div>
         <div style="font-size: 30px">Gomoku Game</div>
         <br>
         <div id="ind_box">
@@ -19,7 +22,8 @@
         <div id="win_info">{{game_result===undefined ? score.toString() : game_result_show[game_result]}}</div>
         <div class = "control">
             <span id="btn_start_player" class="btn_item" :class="{btn_disable: game_start}" v-on:click="start_game_player">vs Player</span>
-            <span id="btn_start_ai" class="btn_item" :class="{btn_disable: game_start}" v-on:click="show_ai_config">vs Com</span>
+            <span id="btn_start_ai" class="btn_item" :class="{btn_disable: game_start}" @click="ai_config_show = !ai_config_show;ai_test_config_show = false">vs Com</span>
+            <span class="btn_item" @click="ai_test_config_show = !ai_test_config_show;ai_config_show = false">Com vs Com</span>
             <span id="btn_restart" class="btn_item"  v-on:click="restart_game">Reset</span>
             <span class="btn_item" v-on:click="log_show = !log_show">Log</span>
         </div>
@@ -47,6 +51,41 @@
                 </span>
             </div>
         </div>
+        <div v-show="ai_test_config_show" class="config_box" width="340px">
+            <div>
+                <div class="box_vertical">
+                    <div class="list_line">Black</div>
+                    <div class="list_line">
+                        <span>Tree Depth: </span>
+                        <input type="number" v-model="ai_test_tree_depth_b" placeholder="depth">
+                    </div>
+                    <div class="list_line">
+                        <span>Calculation: </span>
+                        <input type="number" v-model="ai_test_cal_b" placeholder="depth">
+                    </div>
+                </div>
+                <div class="box_vertical">
+                    <div class="list_line">White</div>
+                    <div class="list_line">
+                        <span>Tree Depth: </span>
+                        <input type="number" v-model="ai_test_tree_depth_w" placeholder="depth">
+                    </div>
+                    <div class="list_line">
+                        <span>Calculation: </span>
+                        <input type="number" v-model="ai_test_cal_w" placeholder="depth">
+                    </div>
+                </div>
+            </div>
+            <div class="list_line">
+                <span class="ind_item">Round</span>
+                <span class="ind_item">
+                    <input type="number" v-model="ai_test_round" placeholder="round">
+                </span>
+            </div>
+            <div class="list_line">
+                <span class="btn_item" @click="ai_test_start">  Start  </span>
+            </div>
+        </div>
         <br>
         <small class="small_info">UCSD 22WIN CSE202 project</small>
     </div>
@@ -56,10 +95,11 @@
 <script>
 import {get_score, get_result, next_step} from "./game_logic.js"
 import BackTrackingLog from "@/components/BackTrackingLog";
+import AiTestLog from "@/components/AiTestLog"
 
 export default {
     name: 'App',
-    components: {BackTrackingLog},
+    components: {AiTestLog, BackTrackingLog},
     data: () => {
         return {
             board_size: 15,
@@ -89,11 +129,18 @@ export default {
                 'w': 'White Wins'
             },
             ai_config_show: false,
+            ai_test_config_show: false,
             log_show: true,
             player_type: 'b',
             com_type: 'w',
             tree_depth: 1,
-            cal_num: 7
+            cal_num: 7,
+
+            ai_test_tree_depth_b: 1,
+            ai_test_tree_depth_w: 2,
+            ai_test_cal_b: 6,
+            ai_test_cal_w: 6,
+            ai_test_round: 1,
         }
     },
     mounted() {
@@ -131,9 +178,6 @@ export default {
             this.board_able = true;
             this.player_mode = "player";
         },
-        show_ai_config(){
-            this.ai_config_show = !this.ai_config_show;
-        },
         start_game_ai(){
             if(this.game_start) return;
             this.game_start = true;
@@ -151,9 +195,44 @@ export default {
                 this.com_type='w';
             }
         },
+        ai_test_start() {
+            this.$refs["result-log"].clearResult();
+            this.$refs["result-log"].meShow(true);
+            this.$refs["result-log"].initParameters(
+                this.ai_test_tree_depth_b,
+                this.ai_test_tree_depth_w,
+                this.ai_test_cal_b,
+                this.ai_test_cal_w,
+                this.ai_test_round
+            )
+            for (let i = 0; i < this.ai_test_round; i++) {
+                let type = 's';
+                this.stones = Array(255);
+                this.drawLines()
+                do {
+                    if (type === 's') {
+                        this.stones[7 * 15 + 7] = 'b';
+                        type = 'w';
+                        continue;
+                    }
+                    let [next_index] = next_step(
+                        this.stones,
+                        type,
+                        type === 'b' ? this.ai_test_tree_depth_b : this.ai_test_tree_depth_w,
+                        type === 'b' ? this.ai_test_cal_b : this.ai_test_cal_w
+                    )
+                    this.stones[next_index] = type;
+                    if(get_result(this.stones, type)) break;
+                    type = (type==='b' ? 'w' : 'b');
+                } while (type !=='s')
+                console.log(this.stones)
+                this.update_stones()
+                this.$refs["result-log"].addResult({'winner': type});
+            }
+        },
         restart_game(){
             this.stones.splice(undefined, this.stones.length);
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
             this.drawLines();
             this.now_player = 'b';
             this.score = 0;
@@ -192,6 +271,7 @@ export default {
         stone_index(x, y){
             return 15*x + y;
         },
+
         exchange_player(){
             if(this.now_player === 'w'){
                 this.now_player = 'b';
@@ -248,6 +328,7 @@ export default {
             this.$refs.backtrackingLog.self_add_record(new_record)
         },
         drawLines(){
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.ctx.fillStyle = 'black';
             for(let i=0;i<this.board_size;i++){
                 this.ctx.beginPath();
@@ -363,5 +444,9 @@ export default {
 .list_line{
     margin-top: 10px;
     margin-bottom: 10px;
+}
+.box_vertical{
+    float: left;
+    width: 170px;
 }
 </style>
