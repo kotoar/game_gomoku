@@ -141,6 +141,9 @@ export default {
             ai_test_cal_b: 6,
             ai_test_cal_w: 6,
             ai_test_round: 1,
+
+            ai_test_total_time: {'b':0, 'w':0},
+            ai_test_time_crt: {'b':0, 'w':0},
         }
     },
     mounted() {
@@ -205,16 +208,20 @@ export default {
                 this.ai_test_cal_w,
                 this.ai_test_round
             )
+            this.ai_test_total_time = {'b': 0, 'w':0};
+            this.ai_test_time_crt = {'b': 0, 'w':0};
             for (let i = 0; i < this.ai_test_round; i++) {
                 let type = 's';
                 this.stones = Array(255);
-                this.drawLines()
+                this.drawLines();
+                let ts = Date.now();
                 do {
                     if (type === 's') {
                         this.stones[7 * 15 + 7] = 'b';
                         type = 'w';
                         continue;
                     }
+                    ts = Date.now();
                     let [next_index] = next_step(
                         this.stones,
                         type,
@@ -222,12 +229,18 @@ export default {
                         type === 'b' ? this.ai_test_cal_b : this.ai_test_cal_w
                     )
                     this.stones[next_index] = type;
+                    this.ai_test_time_crt[type] += 1;
+                    this.ai_test_total_time[type] += Date.now() - ts;
                     if(get_result(this.stones, type)) break;
                     type = (type==='b' ? 'w' : 'b');
                 } while (type !=='s')
                 console.log(this.stones)
                 this.update_stones()
                 this.$refs["result-log"].addResult({'winner': type});
+                this.$refs["result-log"].changeTimeUse(
+                    this.ai_test_total_time['b'] / this.ai_test_time_crt['b'],
+                    this.ai_test_total_time['w'] / this.ai_test_time_crt['w']
+                )
             }
         },
         restart_game(){

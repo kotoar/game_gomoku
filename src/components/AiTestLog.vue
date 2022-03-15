@@ -10,8 +10,13 @@
             <div>White:</div>
             <div>depth: {{white_depth}}, cal: {{white_cal}}</div>
             <div>round: {{round}}</div>
-            <div>Black Winning Rate: {{black_win_crt / (black_win_crt + white_win_crt) * 100}} %</div>
+            <div>Black Winning Rate: {{(black_win_crt / (black_win_crt + white_win_crt) * 100).toFixed(2)}} %</div>
         </div>
+        <div>
+            <div>Black avg time: {{(black_avg_time/1000).toFixed(5)}}</div>
+            <div>White avg time: {{(white_avg_time/1000).toFixed(5)}}</div>
+        </div>
+
         <br>
         <div style="overflow-y: scroll;height: 600px">
             <table>
@@ -45,7 +50,9 @@ export default {
             round: 0,
             self_show: false,
             black_win_crt: 0,
-            white_win_crt: 0
+            white_win_crt: 0,
+            black_avg_time: 0,
+            white_avg_time: 0
         }
     },
     methods:{
@@ -71,6 +78,10 @@ export default {
         },
         meShow(is_show){
             this.self_show = is_show;
+        },
+        changeTimeUse(black_time, white_time){
+            this.black_avg_time = black_time;
+            this.white_avg_time = white_time;
         }
     }
 }
