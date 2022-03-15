@@ -82,6 +82,12 @@
                     <input type="number" v-model="ai_test_round" placeholder="round">
                 </span>
             </div>
+            <div>
+                <span class="ind_item">Renju Rule: </span>
+                <span class="ind_item">
+                    <input type="checkbox" v-model="ai_test_renju">
+                </span>
+            </div>
             <div class="list_line">
                 <span class="btn_item" @click="ai_test_start">  Start  </span>
             </div>
@@ -141,6 +147,7 @@ export default {
             ai_test_cal_b: 6,
             ai_test_cal_w: 6,
             ai_test_round: 1,
+            ai_test_renju: false,
 
             ai_test_total_time: {'b':0, 'w':0},
             ai_test_time_crt: {'b':0, 'w':0},
@@ -190,7 +197,7 @@ export default {
                 this.com_type='b';
                 this.stones[7*15+7] = 'b'
                 this.draw_black_stone(7,7)
-                this.score = get_score(this.stones, 'b');
+                this.score = get_score(this.stones, 'b', this.ai_test_renju);
                 this.add_record('b', 7, 7, this.score)
                 this.exchange_player()
             }
@@ -226,7 +233,8 @@ export default {
                         this.stones,
                         type,
                         type === 'b' ? this.ai_test_tree_depth_b : this.ai_test_tree_depth_w,
-                        type === 'b' ? this.ai_test_cal_b : this.ai_test_cal_w
+                        type === 'b' ? this.ai_test_cal_b : this.ai_test_cal_w,
+                        this.ai_test_renju
                     )
                     this.stones[next_index] = type;
                     this.ai_test_time_crt[type] += 1;
@@ -295,7 +303,7 @@ export default {
         },
         step_forward(x, y){
             this.update_stones();
-            this.score = get_score(this.stones, this.player_type);
+            this.score = get_score(this.stones, this.player_type, false);
             let result = get_result(this.stones, this.now_player);
             this.add_record(this.now_player, x, y, this.score);
             if(result){
@@ -305,7 +313,7 @@ export default {
                 return;
             }
             if(this.player_mode==="ai"){
-                let [next_index,next_score] = next_step(this.stones, this.com_type, this.tree_depth, this.cal_num);
+                let [next_index,next_score] = next_step(this.stones, this.com_type, this.tree_depth, this.cal_num, false);
                 this.score = next_score
                 this.stones[next_index] = this.com_type;
                 let next_x = Math.floor(next_index / 15)

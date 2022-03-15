@@ -61,7 +61,7 @@ function qiansi_pattern(type){
 
     return [[undefined,type,undefined,type,type,undefined],[undefined,type,type,undefined,type,undefined]]
 }
-function val_helper(val,type,crt,block,ret,val_stack){
+function val_helper(val,type,crt,block,ret,val_stack, pat3, pat4){
     val_stack.push(val)
     if (val_stack.length > 6){
         val_stack.pop(0)
@@ -76,6 +76,12 @@ function val_helper(val,type,crt,block,ret,val_stack){
     }
     else if(val===undefined){
         ret += score_list[crt][block];
+        if(crt === 3){
+            pat3 += 1;
+        }
+        else if(crt === 4){
+            pat4 += 1;
+        }
         crt = 0;
         block = 0;
 
@@ -85,22 +91,29 @@ function val_helper(val,type,crt,block,ret,val_stack){
 
         block += 1;
         ret += score_list[crt][block];
+        if(crt === 3){
+            pat3 += 1;
+        }
+        else if(crt === 4){
+            pat4 += 1;
+        }
         crt = 0;
         block = 1;
 
     }
-    return [crt,block,ret]
+    return [crt,block,ret, pat3, pat4]
 }
 //evaluation function for single player
-let detect = (board, type) => {
+let detect = (board, type, renju) => {
     let ret = 0;
     let val_stack = [];
+    let pat3 = 0, pat4 = 0;
     for(let y=0;y<15;y++){
         let block = 1;
         let crt = 0;
         for(let x=0;x<15;x++){
             let val = stone_val(board, x, y);
-            [crt,block,ret] = val_helper(val,type,crt,block,ret,val_stack)
+            [crt,block,ret,pat3, pat4] = val_helper(val,type,crt,block,ret,val_stack, pat3, pat4)
         }
     }
     val_stack = [];
@@ -109,7 +122,7 @@ let detect = (board, type) => {
         let crt = 0;
         for(let y=0;y<15;y++){
             let val = stone_val(board, x, y);
-            [crt,block,ret] = val_helper(val,type,crt,block,ret,val_stack)
+            [crt,block,ret, pat3, pat4] = val_helper(val,type,crt,block,ret,val_stack, pat3, pat4)
         }
     }
     val_stack = [];
@@ -118,7 +131,7 @@ let detect = (board, type) => {
         let crt = 0;
         for(let x=xb, y=yb;0<=x && x<15 && 0<=y && y<15; x+=1, y+=1){
             let val = stone_val(board, x, y);
-            [crt,block,ret] = val_helper(val,type,crt,block,ret,val_stack)
+            [crt,block,ret, pat3, pat4] = val_helper(val,type,crt,block,ret,val_stack, pat3, pat4)
         }
     }
     val_stack = [];
@@ -127,7 +140,7 @@ let detect = (board, type) => {
         let crt = 0;
         for(let x=xb, y=yb;0<=x && x<15 && 0<=y && y<15; x+=1, y+=1){
             let val = stone_val(board, x, y);
-            [crt,block,ret] = val_helper(val,type,crt,block,ret,val_stack)
+            [crt,block,ret, pat3, pat4] = val_helper(val,type,crt,block,ret,val_stack, pat3, pat4)
         }
     }
     val_stack = [];
@@ -136,7 +149,7 @@ let detect = (board, type) => {
         let crt = 0;
         for(let x=xb, y=yb;0<=x && x<15 && 0<=y && y<15; x+=1, y-=1){
             let val = stone_val(board, x, y);
-            [crt,block,ret] = val_helper(val,type,crt,block,ret,val_stack)
+            [crt,block,ret, pat3, pat4] = val_helper(val,type,crt,block,ret,val_stack, pat3, pat4)
         }
     }
     val_stack = [];
@@ -145,21 +158,24 @@ let detect = (board, type) => {
         let crt = 0;
         for(let x=xb, y=yb;0<=x && x<15 && 0<=y && y<15; x+=1, y-=1){
             let val = stone_val(board, x, y);
-            [crt,block,ret] = val_helper(val,type,crt,block,ret,val_stack)
+            [crt,block,ret, pat3, pat4] = val_helper(val,type,crt,block,ret,val_stack, pat3, pat4)
         }
+    }
+    if(type==='b' && renju===true && (pat3 >=2 || pat4>=2)){
+        return -10000;
     }
     return ret;
 }
 
 //evaluation function
-export let get_score = (board, host) => {
+export let get_score = (board, host, renju) => {
     //console.log('host=', host)
     let kb = (host === 'b' ? 1.5: 1);
     let kw = (host === 'w' ? 1.5: 1);
     //console.log('kb ', kb);
     //console.log('kw ', kw);
 
-    return kb * detect(board, 'b') - kw * detect(board, 'w');
+    return kb * detect(board, 'b', renju) - kw * detect(board, 'w', renju);
 }
 
 export let get_result = (board, type) => {
@@ -262,9 +278,9 @@ let reverse_type = (type)=>{
 }
 
 //min-max search
-export let next_step = (board, type, depth, cal) => {
+export let next_step = (board, type, depth, cal, renju) => {
     // return [next_step location, next_step score]
-    let scores = next_score(board, type, cal);
+    let scores = next_score(board, type, cal, renju);
     console.log('depth', depth);
     console.log(scores);
     if(depth==1){
@@ -280,7 +296,7 @@ export let next_step = (board, type, depth, cal) => {
         console.log("white:", warzone['white']);
         let type_reverse = reverse_type(type);
         var opt_move=0;
-        [opt_move,scores[i]["score"]] = next_step(cpboard, type_reverse, depth-1);
+        [opt_move,scores[i]["score"]] = next_step(cpboard, type_reverse, depth-1, renju);
         console.log(opt_move)
     }
     let sortFn = (a, b)=>{
@@ -334,7 +350,7 @@ function stone_list(board){
     }
     return output
 }
-let next_score = (board, type, cal) => {
+let next_score = (board, type, cal, renju) => {
     let scores = [];
     let [rf_lb, rf_ub, rf_rb, rf_db] = bound_generate(board)
     for(let x=rf_lb;x<rf_rb+1;x++) {
@@ -342,7 +358,7 @@ let next_score = (board, type, cal) => {
             let i = x * BOARDLEN + y
             if (board[i] !== undefined) continue;
             board[i] = type;
-            let s = get_score(board, inverse_type(type));
+            let s = get_score(board, inverse_type(type), renju);
             board[i] = undefined;
             scores.push({"index": i, "score": s});
         }
