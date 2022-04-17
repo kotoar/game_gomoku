@@ -4,7 +4,7 @@
             Play Log
         </div>
         <br>
-        <div style="overflow-y: scroll;height: 300px">
+        <div style="overflow-y: auto;height: 300px">
             <table>
                 <thead class="list_table_header">
                 <tr>

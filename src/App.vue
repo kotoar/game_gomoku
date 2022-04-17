@@ -23,7 +23,7 @@
         <div class = "control">
             <span id="btn_start_player" class="btn_item" :class="{btn_disable: game_start}" v-on:click="start_game_player">vs Player</span>
             <span id="btn_start_ai" class="btn_item" :class="{btn_disable: game_start}" @click="ai_config_show = !ai_config_show;ai_test_config_show = false">vs Com</span>
-            <span class="btn_item" @click="ai_test_config_show = !ai_test_config_show;ai_config_show = false">Com vs Com</span>
+            <!--<span class="btn_item" @click="ai_test_config_show = !ai_test_config_show;ai_config_show = false">Com vs Com</span>-->
             <span id="btn_restart" class="btn_item"  v-on:click="restart_game">Reset</span>
             <span class="btn_item" v-on:click="log_show = !log_show">Log</span>
         </div>
@@ -51,7 +51,7 @@
                 </span>
             </div>
         </div>
-        <div v-show="ai_test_config_show" class="config_box" width="340px">
+        <div v-show="ai_test_config_show" class="config_box" width="340px" style="display: none">
             <div>
                 <div class="box_vertical">
                     <div class="list_line">Black</div>
@@ -136,7 +136,7 @@ export default {
             },
             ai_config_show: false,
             ai_test_config_show: false,
-            log_show: true,
+            log_show: false,
             player_type: 'b',
             com_type: 'w',
             tree_depth: 1,
